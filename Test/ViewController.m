@@ -25,13 +25,13 @@
     [MXURLCache setSharedURLCache:urlCache];
     
     self.webView.delegate = self;
-    [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.moxtra.com/service3/#/timeline"]]];
+    [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]]];
 }
 
 #pragma mark - User Action
 - (IBAction)tapped:(id)sender
 {
-    [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.moxtra.com/service3/#/timeline"]]];
+    [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"http://www.baidu.com"]]];
 }
 
 #pragma mark - UIWebViewDelegate
