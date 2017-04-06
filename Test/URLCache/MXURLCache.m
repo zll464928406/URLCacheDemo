@@ -164,10 +164,7 @@
         [self.responseDictionary setValue:[NSNumber numberWithBool:TRUE] forKey:url];
                 
         [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-            if (response && data)
-            {
-                [self.responseDictionary removeObjectForKey:url];
-            }
+            
             if (error)
             {
                 NSLog(@"error : %@", error);
@@ -175,15 +172,20 @@
                 cachedResponse = nil;
             }
             
-            //save to cache
-            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f", [date timeIntervalSince1970]], @"time",
-                                  response.MIMEType, @"MIMEType",
-                                  response.textEncodingName, @"textEncodingName", nil];
-            [dict writeToFile:otherInfoPath atomically:YES];
-            [data writeToFile:filePath atomically:YES];
-            NSLog(@"save to cache");
-            
-            cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
+            if (response && data)
+            {
+                [self.responseDictionary removeObjectForKey:url];
+                
+                //save to cache
+                NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f", [date timeIntervalSince1970]], @"time",
+                                      response.MIMEType, @"MIMEType",
+                                      response.textEncodingName, @"textEncodingName", nil];
+                [dict writeToFile:otherInfoPath atomically:YES];
+                [data writeToFile:filePath atomically:YES];
+                NSLog(@"save to cache");
+                
+                cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
+            }
             
         }] resume];
         

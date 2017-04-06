@@ -16,19 +16,13 @@
 
 @implementation ViewController
 
--(instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
-{
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        MXURLCache *urlCache = [[MXURLCache alloc] initWithMemoryCapacity:20 * 1024 * 1024
-                                                                     diskCapacity:200 * 1024 * 1024
-                                                                         diskPath:nil
-                                                                        cacheTime:0];
-        [MXURLCache setSharedURLCache:urlCache];
-    }
-    return self;
-}
 - (void)viewDidLoad {
     [super viewDidLoad];
+    MXURLCache *urlCache = [[MXURLCache alloc] initWithMemoryCapacity:20 * 1024 * 1024
+                                                         diskCapacity:200 * 1024 * 1024
+                                                             diskPath:nil
+                                                            cacheTime:0];
+    [MXURLCache setSharedURLCache:urlCache];
     
     self.webView.delegate = self;
     [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"https://www.moxtra.com/service3/#/timeline"]]];
