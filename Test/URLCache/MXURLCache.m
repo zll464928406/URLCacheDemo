@@ -23,10 +23,6 @@
 
 @implementation MXURLCache
 
-@synthesize cacheTime = _cacheTime;
-@synthesize diskPath = _diskPath;
-@synthesize responseDictionary = _responseDictionary;
-
 - (id)initWithMemoryCapacity:(NSUInteger)memoryCapacity diskCapacity:(NSUInteger)diskCapacity diskPath:(NSString *)path cacheTime:(NSInteger)cacheTime
 {
     if (self = [self initWithMemoryCapacity:memoryCapacity diskCapacity:diskCapacity diskPath:path])
@@ -167,19 +163,17 @@
     if (boolExsite == nil) {
         [self.responseDictionary setValue:[NSNumber numberWithBool:TRUE] forKey:url];
                 
-        [NSURLConnection sendAsynchronousRequest:request queue:[[NSOperationQueue alloc]init] completionHandler:^(NSURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable connectionError) {
+        [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
             if (response && data)
             {
                 [self.responseDictionary removeObjectForKey:url];
             }
-            if (connectionError)
+            if (error)
             {
-                NSLog(@"error : %@", connectionError);
+                NSLog(@"error : %@", error);
                 NSLog(@"not cached: %@", request.URL.absoluteString);
                 cachedResponse = nil;
             }
-            
-            NSLog(@"get request ... ");
             
             //save to cache
             NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f", [date timeIntervalSince1970]], @"time",
@@ -187,9 +181,11 @@
                                   response.textEncodingName, @"textEncodingName", nil];
             [dict writeToFile:otherInfoPath atomically:YES];
             [data writeToFile:filePath atomically:YES];
+            NSLog(@"save to cache");
             
             cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
-        }];
+            
+        }] resume];
         
         return cachedResponse;
     }
