@@ -134,19 +134,19 @@
         if (expire == false)
         {
             NSLog(@"data from cache ...");
-            
             NSData *data = [NSData dataWithContentsOfFile:filePath];
             NSURLResponse *response = [[NSURLResponse alloc] initWithURL:request.URL
                                                                 MIMEType:[otherInfo objectForKey:@"MIMEType"]
                                                    expectedContentLength:data.length
                                                         textEncodingName:[otherInfo objectForKey:@"textEncodingName"]];
             NSCachedURLResponse *cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
+            [self removeCachedResponseForRequest:request];
+            [self saveOrUpdateCacheWith:request];
             return cachedResponse;
         }
         else
         {
             NSLog(@"cache expire ... ");
-            
             [fileManager removeItemAtPath:filePath error:nil];
             [fileManager removeItemAtPath:otherInfoPath error:nil];
         }
@@ -157,12 +157,25 @@
         return nil;
     }
     
-    //sendSynchronousRequest请求也要经过NSURLCache
+    return [self saveOrUpdateCacheWith:request];
+}
+
+- (NSCachedURLResponse *)saveOrUpdateCacheWith:(NSURLRequest *)request
+{
+    //sendSynchronousRequest . save or update cache
+    NSString *url = request.URL.absoluteString;
+    NSString *fileName = [self cacheRequestFileName:url];
+    NSString *otherInfoFileName = [self cacheRequestOtherInfoFileName:url];
+    NSString *filePath = [self cacheFilePath:fileName];
+    NSString *otherInfoPath = [self cacheFilePath:otherInfoFileName];
+    NSDate *date = [NSDate date];
+    
     __block NSCachedURLResponse * cachedResponse = nil;
     id boolExsite = [self.responseDictionary objectForKey:url];
-    if (boolExsite == nil) {
+    if (boolExsite == nil)
+    {
         [self.responseDictionary setValue:[NSNumber numberWithBool:TRUE] forKey:url];
-                
+        
         [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
             
             if (error)
@@ -191,6 +204,7 @@
         
         return cachedResponse;
     }
+    
     return nil;
 }
 
