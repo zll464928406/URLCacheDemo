@@ -10,9 +10,7 @@
 
 @interface MXURLCache : NSURLCache
 
-@property(nonatomic, assign) NSInteger cacheTime;
-@property(nonatomic, strong) NSString *diskPath;
-@property(nonatomic, strong) NSMutableDictionary *responseDictionary;
+@property(nonatomic, readonly, copy) NSString *diskPath;
 
 - (id)initWithMemoryCapacity:(NSUInteger)memoryCapacity diskCapacity:(NSUInteger)diskCapacity diskPath:(NSString *)path cacheTime:(NSInteger)cacheTime;
 

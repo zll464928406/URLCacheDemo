@@ -8,16 +8,14 @@
 
 #import "MXURLCache.h"
 #import "Reachability.h"
-#import "Util.h"
+#import "MXURLCache+Private.h"
 
-@interface MXURLCache(private)
+static NSTimeInterval const kMXURLCacheInfoDefaultMinCacheInterval = 5 * 60;
 
-- (NSString *)cacheFolder;
-- (NSString *)cacheFilePath:(NSString *)file;
-- (NSString *)cacheRequestFileName:(NSString *)requestUrl;
-- (NSString *)cacheRequestOtherInfoFileName:(NSString *)requestUrl;
-- (NSCachedURLResponse *)dataFromRequest:(NSURLRequest *)request;
-- (void)deleteCacheFolder;
+@interface MXURLCache ()
+
+@property(nonatomic, copy) NSString *diskPath;
+@property(nonatomic, strong) NSMutableDictionary *responseDictionary;
 
 @end
 
@@ -27,7 +25,6 @@
 {
     if (self = [self initWithMemoryCapacity:memoryCapacity diskCapacity:diskCapacity diskPath:path])
     {
-        self.cacheTime = cacheTime;
         if (path)
             self.diskPath = path;
         else
@@ -38,8 +35,17 @@
     return self;
 }
 
+#pragma mark - Method from NSURLCache
 - (NSCachedURLResponse *)cachedResponseForRequest:(NSURLRequest *)request
 {
+    request = [MXURLCache canonicalRequestForRequest:request];
+    
+    NSCachedURLResponse *memoryResponse = [super cachedResponseForRequest:request];
+    if (memoryResponse)
+    {
+        return memoryResponse;
+    }
+    
     if ([request.HTTPMethod compare:@"GET"] != NSOrderedSame)
     {
         return [super cachedResponseForRequest:request];
@@ -48,14 +54,57 @@
     return [self dataFromRequest:request];
 }
 
-- (void)removeAllCachedResponses
+-(void)storeCachedResponse:(NSCachedURLResponse *)cachedResponse forRequest:(NSURLRequest *)request
 {
-    [super removeAllCachedResponses];
+    request = [MXURLCache canonicalRequestForRequest:request];
+    if (request.cachePolicy == NSURLRequestReloadIgnoringLocalCacheData
+        || request.cachePolicy == NSURLRequestReloadIgnoringLocalAndRemoteCacheData
+        || request.cachePolicy == NSURLRequestReloadIgnoringCacheData)
+    {
+        // When cache is ignored for read, it's a good idea not to store the result as well as this option
+        // have big chance to be used every times in the future for the same request.
+        // NOTE: This is a change regarding default URLCache behavior
+        return;
+    }
     
-    [self deleteCacheFolder];
+    [super storeCachedResponse:cachedResponse forRequest:request];
+    
+    NSString *url = request.URL.absoluteString;
+    NSString *fileName = [self cacheRequestFileName:url];
+    NSString *otherInfoFileName = [self cacheRequestOtherInfoFileName:url];
+    NSString *filePath = [self cacheFilePath:fileName];
+    NSString *otherInfoPath = [self cacheFilePath:otherInfoFileName];
+    
+    NSURLCacheStoragePolicy storagePolicy = cachedResponse.storagePolicy;
+    if ((storagePolicy == NSURLCacheStorageAllowed || (storagePolicy == NSURLCacheStorageAllowedInMemoryOnly))
+        && [cachedResponse.response isKindOfClass:[NSHTTPURLResponse self]]
+        )
+    {
+        NSDictionary *headers = [(NSHTTPURLResponse *)cachedResponse.response allHeaderFields];
+        // RFC 2616 section 13.3.4 says clients MUST use Etag in any cache-conditional request if provided by server
+        if (![headers objectForKey:@"Etag"])
+        {
+            NSDate *expirationDate = [MXURLCache expirationDateFromHeaders:headers
+                                                            withStatusCode:((NSHTTPURLResponse *)cachedResponse.response).statusCode];
+            if (!expirationDate || [expirationDate timeIntervalSinceNow] - kMXURLCacheInfoDefaultMinCacheInterval <= 0)
+            {
+                // This response is not cacheable, headers said
+                NSFileManager *fileManager = [NSFileManager defaultManager];
+                if ([fileManager fileExistsAtPath:filePath])
+                {
+                    [fileManager removeItemAtPath:filePath error:nil];
+                    [fileManager removeItemAtPath:otherInfoPath error:nil];
+                }
+                return;
+            }
+        }
+        
+        [self saveOrUpdateCacheWith:request];
+    }
 }
 
-- (void)removeCachedResponseForRequest:(NSURLRequest *)request {
+- (void)removeCachedResponseForRequest:(NSURLRequest *)request
+{
     [super removeCachedResponseForRequest:request];
     
     NSString *url = request.URL.absoluteString;
@@ -68,46 +117,13 @@
     [fileManager removeItemAtPath:otherInfoPath error:nil];
 }
 
-#pragma mark - private method
-- (NSString *)cacheFolder
+- (void)removeAllCachedResponses
 {
-    NSString *bundleId = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
-    return bundleId == nil ? @"URLCACHE" : bundleId;
+    [super removeAllCachedResponses];
+    [self deleteCacheFolder];
 }
 
-- (void)deleteCacheFolder
-{
-    NSString *path = [NSString stringWithFormat:@"%@/%@", self.diskPath, [self cacheFolder]];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    [fileManager removeItemAtPath:path error:nil];
-}
-
-- (NSString *)cacheFilePath:(NSString *)file
-{
-    NSString *path = [NSString stringWithFormat:@"%@/%@", self.diskPath, [self cacheFolder]];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    BOOL isDir;
-    if ([fileManager fileExistsAtPath:path isDirectory:&isDir] && isDir)
-    {
-        
-    }
-    else
-    {
-        [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    return [NSString stringWithFormat:@"%@/%@", path, file];
-}
-
-- (NSString *)cacheRequestFileName:(NSString *)requestUrl
-{
-    return [Util md5Hash:requestUrl];
-}
-
-- (NSString *)cacheRequestOtherInfoFileName:(NSString *)requestUrl
-{
-    return [Util md5Hash:[NSString stringWithFormat:@"%@-otherInfo", requestUrl]];
-}
-
+#pragma mark - Private Method
 - (NSCachedURLResponse *)dataFromRequest:(NSURLRequest *)request
 {
     NSString *url = request.URL.absoluteString;
@@ -115,25 +131,14 @@
     NSString *otherInfoFileName = [self cacheRequestOtherInfoFileName:url];
     NSString *filePath = [self cacheFilePath:fileName];
     NSString *otherInfoPath = [self cacheFilePath:otherInfoFileName];
-    NSDate *date = [NSDate date];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:filePath])
     {
-        BOOL expire = false;
-        NSDictionary *otherInfo = [NSDictionary dictionaryWithContentsOfFile:otherInfoPath];
-        
-        if (self.cacheTime > 0)
+        @synchronized (self)
         {
-            NSInteger createTime = [[otherInfo objectForKey:@"time"] intValue];
-            if (createTime + self.cacheTime < [date timeIntervalSince1970])
-            {
-                expire = true;
-            }
-        }
-        
-        if (expire == false)
-        {
+            NSDictionary *otherInfo = [NSDictionary dictionaryWithContentsOfFile:otherInfoPath];
+            
             NSLog(@"data from cache ...");
             NSData *data = [NSData dataWithContentsOfFile:filePath];
             NSURLResponse *response = [[NSURLResponse alloc] initWithURL:request.URL
@@ -141,15 +146,7 @@
                                                    expectedContentLength:data.length
                                                         textEncodingName:[otherInfo objectForKey:@"textEncodingName"]];
             NSCachedURLResponse *cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
-            [self removeCachedResponseForRequest:request];
-            [self saveOrUpdateCacheWith:request];
             return cachedResponse;
-        }
-        else
-        {
-            NSLog(@"cache expire ... ");
-            [fileManager removeItemAtPath:filePath error:nil];
-            [fileManager removeItemAtPath:otherInfoPath error:nil];
         }
     }
     
@@ -158,7 +155,7 @@
         return nil;
     }
     
-    return [self saveOrUpdateCacheWith:request];
+    return nil;
 }
 
 - (NSCachedURLResponse *)saveOrUpdateCacheWith:(NSURLRequest *)request
@@ -188,15 +185,18 @@
             
             if (response && data)
             {
-                [self.responseDictionary removeObjectForKey:url];
-                
-                //save to cache
-                NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f", [date timeIntervalSince1970]], @"time",
-                                      response.MIMEType, @"MIMEType",
-                                      response.textEncodingName, @"textEncodingName", nil];
-                [dict writeToFile:otherInfoPath atomically:YES];
-                [data writeToFile:filePath atomically:YES];
-                NSLog(@"save to cache");
+                @synchronized (self)
+                {
+                    [self.responseDictionary removeObjectForKey:url];
+                    
+                    //save to cache
+                    NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f", [date timeIntervalSince1970]], @"time",
+                                          response.MIMEType, @"MIMEType",
+                                          response.textEncodingName, @"textEncodingName", nil];
+                    [dict writeToFile:otherInfoPath atomically:YES];
+                    [data writeToFile:filePath atomically:YES];
+                    NSLog(@"save to cache");
+                }
                 
                 cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
             }

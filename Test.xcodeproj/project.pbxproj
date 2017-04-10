@@ -13,9 +13,10 @@
 		A320520C1E95F6BC00A5DDCF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A320520A1E95F6BC00A5DDCF /* Main.storyboard */; };
 		A320520E1E95F6BC00A5DDCF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A320520D1E95F6BC00A5DDCF /* Assets.xcassets */; };
 		A32052111E95F6BC00A5DDCF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A320520F1E95F6BC00A5DDCF /* LaunchScreen.storyboard */; };
-		A320521B1E95F83F00A5DDCF /* MXURLCache.m in Sources */ = {isa = PBXBuildFile; fileRef = A320521A1E95F83F00A5DDCF /* MXURLCache.m */; };
-		A320521E1E95F88400A5DDCF /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = A320521D1E95F88400A5DDCF /* Reachability.m */; };
-		A32052211E95FA1400A5DDCF /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = A32052201E95FA1400A5DDCF /* Util.m */; };
+		A320532F1E9B878B00A5DDCF /* MXURLCache+Private.m in Sources */ = {isa = PBXBuildFile; fileRef = A32053281E9B878B00A5DDCF /* MXURLCache+Private.m */; };
+		A32053301E9B878B00A5DDCF /* MXURLCache.m in Sources */ = {isa = PBXBuildFile; fileRef = A320532A1E9B878B00A5DDCF /* MXURLCache.m */; };
+		A32053311E9B878B00A5DDCF /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = A320532C1E9B878B00A5DDCF /* Reachability.m */; };
+		A32053321E9B878B00A5DDCF /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = A320532E1E9B878B00A5DDCF /* Util.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,12 +30,14 @@
 		A320520D1E95F6BC00A5DDCF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A32052101E95F6BC00A5DDCF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A32052121E95F6BC00A5DDCF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A32052191E95F83F00A5DDCF /* MXURLCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MXURLCache.h; sourceTree = "<group>"; };
-		A320521A1E95F83F00A5DDCF /* MXURLCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MXURLCache.m; sourceTree = "<group>"; };
-		A320521C1E95F88400A5DDCF /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
-		A320521D1E95F88400A5DDCF /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
-		A320521F1E95FA1400A5DDCF /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
-		A32052201E95FA1400A5DDCF /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Util.m; sourceTree = "<group>"; };
+		A32053271E9B878B00A5DDCF /* MXURLCache+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MXURLCache+Private.h"; sourceTree = "<group>"; };
+		A32053281E9B878B00A5DDCF /* MXURLCache+Private.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MXURLCache+Private.m"; sourceTree = "<group>"; };
+		A32053291E9B878B00A5DDCF /* MXURLCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MXURLCache.h; sourceTree = "<group>"; };
+		A320532A1E9B878B00A5DDCF /* MXURLCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MXURLCache.m; sourceTree = "<group>"; };
+		A320532B1E9B878B00A5DDCF /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
+		A320532C1E9B878B00A5DDCF /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
+		A320532D1E9B878B00A5DDCF /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
+		A320532E1E9B878B00A5DDCF /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Util.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +70,7 @@
 		A32052001E95F6BC00A5DDCF /* Test */ = {
 			isa = PBXGroup;
 			children = (
-				A32052181E95F81D00A5DDCF /* URLCache */,
+				A32053261E9B878B00A5DDCF /* URLCache */,
 				A32052041E95F6BC00A5DDCF /* AppDelegate.h */,
 				A32052051E95F6BC00A5DDCF /* AppDelegate.m */,
 				A32052071E95F6BC00A5DDCF /* ViewController.h */,
@@ -89,15 +92,17 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		A32052181E95F81D00A5DDCF /* URLCache */ = {
+		A32053261E9B878B00A5DDCF /* URLCache */ = {
 			isa = PBXGroup;
 			children = (
-				A320521C1E95F88400A5DDCF /* Reachability.h */,
-				A320521D1E95F88400A5DDCF /* Reachability.m */,
-				A320521F1E95FA1400A5DDCF /* Util.h */,
-				A32052201E95FA1400A5DDCF /* Util.m */,
-				A32052191E95F83F00A5DDCF /* MXURLCache.h */,
-				A320521A1E95F83F00A5DDCF /* MXURLCache.m */,
+				A32053271E9B878B00A5DDCF /* MXURLCache+Private.h */,
+				A32053281E9B878B00A5DDCF /* MXURLCache+Private.m */,
+				A32053291E9B878B00A5DDCF /* MXURLCache.h */,
+				A320532A1E9B878B00A5DDCF /* MXURLCache.m */,
+				A320532B1E9B878B00A5DDCF /* Reachability.h */,
+				A320532C1E9B878B00A5DDCF /* Reachability.m */,
+				A320532D1E9B878B00A5DDCF /* Util.h */,
+				A320532E1E9B878B00A5DDCF /* Util.m */,
 			);
 			path = URLCache;
 			sourceTree = "<group>";
@@ -175,11 +180,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				A32052091E95F6BC00A5DDCF /* ViewController.m in Sources */,
+				A32053301E9B878B00A5DDCF /* MXURLCache.m in Sources */,
+				A320532F1E9B878B00A5DDCF /* MXURLCache+Private.m in Sources */,
 				A32052061E95F6BC00A5DDCF /* AppDelegate.m in Sources */,
+				A32053311E9B878B00A5DDCF /* Reachability.m in Sources */,
+				A32053321E9B878B00A5DDCF /* Util.m in Sources */,
 				A32052031E95F6BC00A5DDCF /* main.m in Sources */,
-				A320521B1E95F83F00A5DDCF /* MXURLCache.m in Sources */,
-				A320521E1E95F88400A5DDCF /* Reachability.m in Sources */,
-				A32052211E95FA1400A5DDCF /* Util.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,6 +344,7 @@
 				A32052171E95F6BC00A5DDCF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
