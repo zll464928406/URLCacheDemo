@@ -71,7 +71,8 @@
 #pragma mark - private method
 - (NSString *)cacheFolder
 {
-    return @"URLCACHE";
+    NSString *bundleId = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"];
+    return bundleId == nil ? @"URLCACHE" : bundleId;
 }
 
 - (void)deleteCacheFolder
