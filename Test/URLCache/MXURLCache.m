@@ -47,7 +47,7 @@
     NSCachedURLResponse *memoryResponse = [super cachedResponseForRequest:request];
     if (memoryResponse)
     {
-        NSLog(@"%@---", request.URL.absoluteString);
+        NSLog(@"%@", request.URL.absoluteString);
         return memoryResponse;
     }
     
@@ -128,11 +128,11 @@
         && cachedResponse.data.length < kMAX_SINGLECAPACITY)
     {
         NSDictionary *headers = [(NSHTTPURLResponse *)cachedResponse.response allHeaderFields];
-        // RFC 2616 section 13.3.4 says clients MUST use Etag in any cache-conditional request if provided by server
-        //if ([headers objectForKey:@"Etag"])
+        NSDate *expirationDate = [MXURLCache expirationDateFromHeaders:headers
+                                                        withStatusCode:((NSHTTPURLResponse *)cachedResponse.response).statusCode];
+        //
+        if (![headers objectForKey:@"Etag"])
         {
-            NSDate *expirationDate = [MXURLCache expirationDateFromHeaders:headers
-                                                            withStatusCode:((NSHTTPURLResponse *)cachedResponse.response).statusCode];
             //NSLog(@"%@",[expirationDate descriptionWithLocale:[NSLocale currentLocale]]);
             //NSLog(@"%lf",[expirationDate timeIntervalSinceNow] - kMXURLCacheInfoDefaultMinCacheInterval);
             if ((!expirationDate) || [expirationDate timeIntervalSinceNow] <= kMXDefaultMinCacheInterval)
@@ -142,35 +142,53 @@
                 
                 return;
             }
-            
-            NSURLResponse *response = cachedResponse.response;
-            NSData *data = cachedResponse.data;
-            
-            id boolExsite = [self.responseDictionary objectForKey:url];
-            if (boolExsite == nil)
+        }
+        
+        NSURLResponse *response = cachedResponse.response;
+        NSData *data = cachedResponse.data;
+        if (response)
+        {
+            @synchronized (self)
             {
-                [self.responseDictionary setValue:[NSNumber numberWithBool:TRUE] forKey:url];
-                if (response)
-                {
-                    @synchronized (self)
-                    {
-                        [self.responseDictionary removeObjectForKey:url];
-                        
-                        //save to cache
-                        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                              date, @"writeDate",
-                                              expirationDate, @"expirationDate",
-                                              response.MIMEType, @"MIMEType",
-                                              response.textEncodingName, @"textEncodingName",
-                                              nil];
-                        [dict writeToFile:otherInfoPath atomically:YES];
-                        [data writeToFile:filePath atomically:YES];
-                        //NSLog(@"save to cache");
-                    }
-                    
-                }
+                //save to cache
+                NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                      date, @"writeDate",
+                                      expirationDate, @"expirationDate",
+                                      response.MIMEType, @"MIMEType",
+                                      response.textEncodingName, @"textEncodingName",
+                                      nil];
+                [dict writeToFile:otherInfoPath atomically:YES];
+                [data writeToFile:filePath atomically:YES];
+                NSLog(@"save to cache");
             }
         }
+        
+        /*
+         id boolExsite = [self.responseDictionary objectForKey:url];
+         if (boolExsite == nil)
+         {
+         [self.responseDictionary setValue:[NSNumber numberWithBool:TRUE] forKey:url];
+         if (response)
+         {
+         @synchronized (self)
+         {
+         [self.responseDictionary removeObjectForKey:url];
+         
+         //save to cache
+         NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+         date, @"writeDate",
+         expirationDate, @"expirationDate",
+         response.MIMEType, @"MIMEType",
+         response.textEncodingName, @"textEncodingName",
+         nil];
+         [dict writeToFile:otherInfoPath atomically:YES];
+         [data writeToFile:filePath atomically:YES];
+         //NSLog(@"save to cache");
+         }
+         
+         }
+         }
+         */
     }
 }
 
