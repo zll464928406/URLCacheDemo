@@ -19,8 +19,4 @@
 - (NSString *)cacheRequestOtherInfoFileName:(NSString *)requestUrl;
 - (void)deleteCacheFolder;
 
-- (float )folderSizeAtPath:(NSString*) folderPath;
-- (long long)fileSizeAtPath:(NSString*) filePath;
-- (void)deleteCacheFolder;
-
 @end

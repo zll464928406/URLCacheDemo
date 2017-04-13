@@ -72,7 +72,6 @@
 - (void)cleanDiskWithCompletionBlock:(void(^)(void))completionBlock
 {
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSArray *resourceKeys = @[NSURLIsDirectoryKey, NSURLContentAccessDateKey, NSURLTotalFileAllocatedSizeKey];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         
         // Target half of our maximum cache size for this cleanup pass.
@@ -130,7 +129,6 @@
     NSUInteger currentCacheSize = 0;
     
     //  2. Storing file attributes for the size-based cleanup pass.
-    NSMutableArray *urlsToDelete = [[NSMutableArray alloc] init];
     for (NSURL *fileURL in fileEnumerator)
     {
         NSDictionary *resourceValues = [fileURL resourceValuesForKeys:resourceKeys error:NULL];

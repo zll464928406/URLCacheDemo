@@ -117,7 +117,7 @@
     
     [super storeCachedResponse:cachedResponse forRequest:request];
     
-    NSDictionary *headers = [(NSHTTPURLResponse *)cachedResponse.response allHeaderFields];
+    //NSDictionary *headers = [(NSHTTPURLResponse *)cachedResponse.response allHeaderFields];
     
     NSURLCacheStoragePolicy storagePolicy = cachedResponse.storagePolicy;
     if ((storagePolicy == NSURLCacheStorageAllowed || (storagePolicy == NSURLCacheStorageAllowedInMemoryOnly))
