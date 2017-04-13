@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A2EBB5061E9FCCC000CB9E84 /* MXURLCache+File.m in Sources */ = {isa = PBXBuildFile; fileRef = A2EBB5051E9FCCC000CB9E84 /* MXURLCache+File.m */; };
 		A32052031E95F6BC00A5DDCF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A32052021E95F6BC00A5DDCF /* main.m */; };
 		A32052061E95F6BC00A5DDCF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A32052051E95F6BC00A5DDCF /* AppDelegate.m */; };
 		A32052091E95F6BC00A5DDCF /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A32052081E95F6BC00A5DDCF /* ViewController.m */; };
@@ -20,6 +21,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A2EBB5041E9FCCC000CB9E84 /* MXURLCache+File.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MXURLCache+File.h"; sourceTree = "<group>"; };
+		A2EBB5051E9FCCC000CB9E84 /* MXURLCache+File.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MXURLCache+File.m"; sourceTree = "<group>"; };
 		A32051FE1E95F6BC00A5DDCF /* Test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Test.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A32052021E95F6BC00A5DDCF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A32052041E95F6BC00A5DDCF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -95,10 +98,12 @@
 		A32053261E9B878B00A5DDCF /* URLCache */ = {
 			isa = PBXGroup;
 			children = (
-				A32053271E9B878B00A5DDCF /* MXURLCache+Private.h */,
-				A32053281E9B878B00A5DDCF /* MXURLCache+Private.m */,
 				A32053291E9B878B00A5DDCF /* MXURLCache.h */,
 				A320532A1E9B878B00A5DDCF /* MXURLCache.m */,
+				A32053271E9B878B00A5DDCF /* MXURLCache+Private.h */,
+				A32053281E9B878B00A5DDCF /* MXURLCache+Private.m */,
+				A2EBB5041E9FCCC000CB9E84 /* MXURLCache+File.h */,
+				A2EBB5051E9FCCC000CB9E84 /* MXURLCache+File.m */,
 				A320532B1E9B878B00A5DDCF /* Reachability.h */,
 				A320532C1E9B878B00A5DDCF /* Reachability.m */,
 				A320532D1E9B878B00A5DDCF /* Util.h */,
@@ -182,6 +187,7 @@
 				A32052091E95F6BC00A5DDCF /* ViewController.m in Sources */,
 				A32053301E9B878B00A5DDCF /* MXURLCache.m in Sources */,
 				A320532F1E9B878B00A5DDCF /* MXURLCache+Private.m in Sources */,
+				A2EBB5061E9FCCC000CB9E84 /* MXURLCache+File.m in Sources */,
 				A32052061E95F6BC00A5DDCF /* AppDelegate.m in Sources */,
 				A32053311E9B878B00A5DDCF /* Reachability.m in Sources */,
 				A32053321E9B878B00A5DDCF /* Util.m in Sources */,

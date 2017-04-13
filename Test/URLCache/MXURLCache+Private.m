@@ -51,6 +51,7 @@ static float const kSDURLCacheDefault = 3600; // Default cache expiration delay 
     if (date)
     {
         now = [MXURLCache dateFromHttpDateString:date];
+        //NSLog(@"%@",[now descriptionWithLocale:[NSLocale currentLocale]]);
     }
     else
     {
