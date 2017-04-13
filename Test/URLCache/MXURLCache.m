@@ -10,11 +10,10 @@
 #import "Reachability.h"
 #import "MXURLCache+Private.h"
 
-#define kMAX_SINGLECAPACITY 10*1024*1024
-#define kMXDefaultMAXCacheInterval  60*60*48 //最大缓存时间
-#define kMXDefaultMinCacheInterval  60*60  //过期时间超过这个数值的才进行缓存
-#define kMXDefaultMinEXPIRATIONTIME 5*60   //距离过期时间小于此值时更新缓存
-#define KFIRSTTIMEINSTALL_CACHE @"firstTimeInstall_cache"
+#define kMAX_SINGLECAPACITY         10*1024*1024 //单个文件的最大值
+#define kMXDefaultMAXCacheInterval  60*60*48     //最大缓存时间
+#define kMXDefaultMinCacheInterval  60*60        //过期时间超过这个数值的才进行缓存
+#define kMXDefaultMinEXPIRATIONTIME 5*60         //距离过期时间小于此值时更新缓存
 
 @interface MXURLCache ()
 
@@ -34,7 +33,7 @@
         else
             self.diskPath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) lastObject];
         
-        self.responseDictionary = [NSMutableDictionary dictionaryWithCapacity:0];
+        self.responseDictionary = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -65,31 +64,30 @@
     NSFileManager *fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:filePath])
     {
-        @synchronized (self)
+        NSDictionary *otherInfo = [NSDictionary dictionaryWithContentsOfFile:otherInfoPath];
+        //check if expirationDate
+        NSDate *expirationDate = [otherInfo objectForKey:@"expirationDate"];
+        NSDate *writeDate = [otherInfo objectForKey:@"writeDate"];
+        //NSLog(@"%@---%@", url,[expirationDate descriptionWithLocale:[NSLocale currentLocale]]);
+        if ([expirationDate timeIntervalSinceNow] < kMXDefaultMinEXPIRATIONTIME || [[NSDate date] timeIntervalSinceDate:writeDate] > kMXDefaultMAXCacheInterval)
         {
-            NSDictionary *otherInfo = [NSDictionary dictionaryWithContentsOfFile:otherInfoPath];
-            //check if expirationDate
-            NSDate *expirationDate = [otherInfo objectForKey:@"expirationDate"];
-            NSDate *writeDate = [otherInfo objectForKey:@"writeDate"];
-            NSLog(@"%@---%@", url,[expirationDate descriptionWithLocale:[NSLocale currentLocale]]);
-            if ([expirationDate timeIntervalSinceNow] < kMXDefaultMinEXPIRATIONTIME || [[NSDate date] timeIntervalSinceDate:writeDate] > kMXDefaultMAXCacheInterval)
+            @synchronized (self)
             {
                 [self removeCachedResponseForRequest:request];
-                
-                return nil;
             }
-            
-            //date from cache
-            NSLog(@"data from cache ...");
-            NSData *data = [NSData dataWithContentsOfFile:filePath];
-            NSURLResponse *response = [[NSURLResponse alloc] initWithURL:request.URL
-                                                                MIMEType:[otherInfo objectForKey:@"MIMEType"]
-                                                   expectedContentLength:data.length
-                                                        textEncodingName:[otherInfo objectForKey:@"textEncodingName"]];
-            NSCachedURLResponse *cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
-            
-            return cachedResponse;
+            return nil;
         }
+        
+        //date from cache
+        NSLog(@"data from cache ...");
+        NSData *data = [NSData dataWithContentsOfFile:filePath];
+        NSURLResponse *response = [[NSURLResponse alloc] initWithURL:request.URL
+                                                            MIMEType:[otherInfo objectForKey:@"MIMEType"]
+                                               expectedContentLength:data.length
+                                                    textEncodingName:[otherInfo objectForKey:@"textEncodingName"]];
+        NSCachedURLResponse *cachedResponse = [[NSCachedURLResponse alloc] initWithResponse:response data:data];
+        
+        return cachedResponse;
     }
     
     if (![Reachability networkAvailable])
@@ -129,12 +127,12 @@
     {
         NSDictionary *headers = [(NSHTTPURLResponse *)cachedResponse.response allHeaderFields];
         // RFC 2616 section 13.3.4 says clients MUST use Etag in any cache-conditional request if provided by server
-        //if ([headers objectForKey:@"Etag"])
+        NSDate *expirationDate = [MXURLCache expirationDateFromHeaders:headers
+                                                        withStatusCode:((NSHTTPURLResponse *)cachedResponse.response).statusCode];
+        //NSLog(@"%@",[expirationDate descriptionWithLocale:[NSLocale currentLocale]]);
+        //NSLog(@"%lf",[expirationDate timeIntervalSinceNow] - kMXURLCacheInfoDefaultMinCacheInterval);
+        if (![headers objectForKey:@"Etag"])
         {
-            NSDate *expirationDate = [MXURLCache expirationDateFromHeaders:headers
-                                                            withStatusCode:((NSHTTPURLResponse *)cachedResponse.response).statusCode];
-            //NSLog(@"%@",[expirationDate descriptionWithLocale:[NSLocale currentLocale]]);
-            //NSLog(@"%lf",[expirationDate timeIntervalSinceNow] - kMXURLCacheInfoDefaultMinCacheInterval);
             if ((!expirationDate) || [expirationDate timeIntervalSinceNow] <= kMXDefaultMinCacheInterval)
             {
                 // This response is not cacheable, headers said
@@ -142,34 +140,27 @@
                 
                 return;
             }
-            
-            NSURLResponse *response = cachedResponse.response;
-            NSData *data = cachedResponse.data;
-            
-            id boolExsite = [self.responseDictionary objectForKey:url];
-            if (boolExsite == nil)
+        }
+        
+        NSURLResponse *response = cachedResponse.response;
+        NSData *data = cachedResponse.data;
+        if (response)
+        {
+            @synchronized (self)
             {
-                [self.responseDictionary setValue:[NSNumber numberWithBool:TRUE] forKey:url];
-                if (response)
-                {
-                    @synchronized (self)
-                    {
-                        [self.responseDictionary removeObjectForKey:url];
-                        
-                        //save to cache
-                        NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                                              date, @"writeDate",
-                                              expirationDate, @"expirationDate",
-                                              response.MIMEType, @"MIMEType",
-                                              response.textEncodingName, @"textEncodingName",
-                                              nil];
-                        [dict writeToFile:otherInfoPath atomically:YES];
-                        [data writeToFile:filePath atomically:YES];
-                        //NSLog(@"save to cache");
-                    }
-                    
-                }
+                [self.responseDictionary removeObjectForKey:url];
             }
+            
+            //save to cache
+            NSDictionary *dict = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  date, @"writeDate",
+                                  expirationDate, @"expirationDate",
+                                  response.MIMEType, @"MIMEType",
+                                  response.textEncodingName, @"textEncodingName",
+                                  nil];
+            [dict writeToFile:otherInfoPath atomically:YES];
+            [data writeToFile:filePath atomically:YES];
+            NSLog(@"save to cache");
         }
     }
 }
